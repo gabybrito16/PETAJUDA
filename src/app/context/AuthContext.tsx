@@ -27,23 +27,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshProfile = async () => {
-    if (!session?.user) { setProfile(null); return; }
-    const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
-    setProfile(data);
+    if (!session?.user) {
+      setProfile(null);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+      if (!error) setProfile(data as Profile | null);
+      else setProfile(null);
+    } catch {
+      setProfile(null);
+    }
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
+    let ignore = false;
+
+    const hydrateSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!ignore) {
+          setSession(currentSession);
+          setLoading(false);
+        }
+      } catch {
+        if (!ignore) {
+          setSession(null);
+          setLoading(false);
+        }
+      }
+    };
+
+    hydrateSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!ignore) {
+        setSession(nextSession);
+        setLoading(false);
+      }
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession));
-    return () => listener.subscription.unsubscribe();
+
+    return () => {
+      ignore = true;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  useEffect(() => { refreshProfile(); }, [session?.user.id]);
+  useEffect(() => {
+    void refreshProfile();
+  }, [session?.user.id]);
 
-  return <AuthContext.Provider value={{ user: session?.user ?? null, profile, loading, refreshProfile, signOut: async () => { await supabase.auth.signOut(); } }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user: session?.user ?? null,
+        profile,
+        loading,
+        refreshProfile,
+        signOut: async () => {
+          try {
+            await supabase.auth.signOut();
+          } finally {
+            setSession(null);
+            setProfile(null);
+          }
+        },
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

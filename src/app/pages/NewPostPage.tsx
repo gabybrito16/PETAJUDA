@@ -10,7 +10,16 @@ export function NewPostPage() {
       <Navbar variant="app" />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 md:px-6 py-10">
-        <h1 className="text-3xl font-black text-foreground mb-8">Nova publicação</h1>
+        <div className="mb-8 flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-black text-foreground">Nova publicação</h1>
+          <button
+            type="button"
+            onClick={() => navigate("/feed", { replace: false })}
+            className="inline-flex items-center gap-2 border border-border rounded-xl px-4 py-2 text-sm font-bold hover:bg-muted"
+          >
+            Voltar ao feed
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Adoption card */}
