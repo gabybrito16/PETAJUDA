@@ -1,12 +1,18 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Upload } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { Navbar } from "../components/Navbar";
 import { usePosts } from "../context/PostsContext";
 import { supabase } from "../../lib/supabase";
+import { logPageAccess } from "../../lib/accessLog";
 
 export function NewPostFormPage() {
   const { tipo } = useParams(); const lost = tipo === "perdido"; const navigate = useNavigate(); const { addPost } = usePosts(); const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    void logPageAccess(tipo ? `/nova-publicacao/${tipo}` : "/nova-publicacao");
+  }, [tipo]);
+
   const [file,setFile]=useState<File|null>(null); const [preview,setPreview]=useState(""); const [busy,setBusy]=useState(false); const [error,setError]=useState("");
   const [form,setForm]=useState({name:"",species:"Cão",gender:"",breed:"",age:"",neighborhood:"",description:"",whatsapp:"",color:"",lastSeen:""}); const set=(key:keyof typeof form,value:string)=>setForm({...form,[key]:value});
   const choose=(selected?:File)=>{if(!selected)return; setFile(selected);setPreview(URL.createObjectURL(selected));};
