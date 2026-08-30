@@ -1,15 +1,20 @@
 import { ArrowLeft, Edit3, Mail, PawPrint, Plus, Trash } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostsContext";
+import { logPageAccess } from "../../lib/accessLog";
 
 export function ProfilePage() {
   const { user, profile } = useAuth();
   const { posts, deletePost } = usePosts();
   const navigate = useNavigate();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void logPageAccess("/perfil");
+  }, []);
   const name = profile?.full_name || user?.user_metadata?.full_name || "Usuário";
   const initials = name.split(" ").map((word: string) => word[0]).join("").slice(0, 2).toUpperCase();
   const ownPosts = posts.filter((post) => post.author.id === user?.id);

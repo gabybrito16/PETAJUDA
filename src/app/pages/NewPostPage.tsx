@@ -1,9 +1,15 @@
 import { Heart, Search } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "../components/Navbar";
+import { logPageAccess } from "../../lib/accessLog";
 
 export function NewPostPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    void logPageAccess("/nova-publicacao");
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
