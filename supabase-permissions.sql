@@ -24,5 +24,25 @@ join public.profiles pr on pr.id = p.user_id;
 
 grant select on public.feed_posts to anon, authenticated;
 
+create or replace view public.access_flow as
+select
+  al.id,
+  p.full_name as user_name,
+  al.page as access,
+  case al.page
+    when '/feed' then 'Visualizou o feed'
+    when '/nova-publicacao' then 'Acessou a criação de publicação'
+    when '/perfil' then 'Visualizou o perfil'
+    when '/nova-publicacao/adocao' then 'Iniciou publicação de adoção'
+    when '/nova-publicacao/perdido' then 'Iniciou publicação de animal perdido'
+    else 'Acessou a página'
+  end as action,
+  al.accessed_at
+from public.access_logs al
+left join public.profiles p on p.id = al.user_id
+order by al.accessed_at desc;
+
+grant select on public.access_flow to authenticated;
+
 grant select on storage.objects to anon, authenticated;
 grant insert on storage.objects to authenticated;

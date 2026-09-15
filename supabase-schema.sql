@@ -48,6 +48,24 @@ create policy "Users delete own posts" on public.posts for delete using (auth.ui
 create policy "Users can insert own access log" on public.access_logs for insert with check (auth.uid() = user_id);
 create policy "Users can read own access log" on public.access_logs for select using (auth.uid() = user_id);
 
+create or replace view public.access_flow as
+select
+  al.id,
+  p.full_name as user_name,
+  al.page as access,
+  case al.page
+    when '/feed' then 'Visualizou o feed'
+    when '/nova-publicacao' then 'Acessou a criação de publicação'
+    when '/perfil' then 'Visualizou o perfil'
+    when '/nova-publicacao/adocao' then 'Iniciou publicação de adoção'
+    when '/nova-publicacao/perdido' then 'Iniciou publicação de animal perdido'
+    else 'Acessou a página'
+  end as action,
+  al.accessed_at
+from public.access_logs al
+left join public.profiles p on p.id = al.user_id
+order by al.accessed_at desc;
+
 create or replace function public.create_profile_for_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
