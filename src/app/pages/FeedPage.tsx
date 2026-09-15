@@ -1,4 +1,4 @@
-import { useState, type ReactNode, useEffect } from "react";
+import { useState, type ReactNode, useEffect, useRef } from "react";
 import { MapPin, MessageCircle, Heart, Home, ChevronDown, ChevronUp } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { usePosts, Post } from "../context/PostsContext";
@@ -9,9 +9,15 @@ function Badge({type}:{type:Post["type"]}) { return <span className={`absolute t
 function Contact({post,label,icon}:{post:Post;label:string;icon?:ReactNode}) { const url=post.whatsapp?`https://wa.me/55${post.whatsapp.replace(/\D/g,"")}`:"#"; return <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1 inline-flex justify-center items-center gap-1.5 bg-emerald-500 text-white text-sm font-semibold px-3 py-2.5 rounded-xl hover:bg-emerald-600">{icon}<span>{label}</span></a>; }
 function Card({post}:{post:Post}) {
   const [expanded, setExpanded] = useState(false);
-  const canExpand = post.description.length > 140;
+  const [canExpand, setCanExpand] = useState(false);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
 
-  return <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border flex flex-col"><div className="relative bg-slate-100 h-52 flex items-center justify-center overflow-hidden">{post.photo?<ImageWithFallback src={post.photo} alt={post.name} className="w-full h-full object-cover"/>:<span className="text-muted-foreground text-sm">Sem foto</span>}<Badge type={post.type}/></div><div className="p-4 flex flex-col gap-2 flex-1"><h3 className="text-lg font-extrabold">{post.name}</h3><div className="flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin size={14}/>{post.neighborhood}</div><p className={`text-sm text-primary font-medium ${expanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}>{post.description}</p>{canExpand&&<button type="button" onClick={()=>setExpanded(!expanded)} className="inline-flex w-fit items-center gap-1 text-sm font-bold text-primary hover:underline" aria-expanded={expanded}>{expanded?"Ver menos":"Ver mais"}{expanded?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>}<div className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border"><b>{post.author.initial}</b> {post.author.name} · {post.date}</div></div><div className="flex flex-wrap gap-2 px-4 pb-4"><Contact post={post} label="Entrar em contato" icon={<MessageCircle size={15}/>}/>{post.type==="adoption"&&<><Contact post={post} label="Quero adotar" icon={<Heart size={15}/>}/><Contact post={post} label="Oferecer lar temporário" icon={<Home size={15}/>}/></>}</div></article>;
+  useEffect(() => {
+    const description = descriptionRef.current;
+    if (description) setCanExpand(description.scrollHeight > description.clientHeight);
+  }, [post.description]);
+
+  return <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border flex flex-col"><div className="relative bg-slate-100 h-52 flex items-center justify-center overflow-hidden">{post.photo?<ImageWithFallback src={post.photo} alt={post.name} className="w-full h-full object-cover"/>:<span className="text-muted-foreground text-sm">Sem foto</span>}<Badge type={post.type}/></div><div className="p-4 flex flex-col gap-2 flex-1"><h3 className="text-lg font-extrabold">{post.name}</h3><div className="flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin size={14}/>{post.neighborhood}</div><p ref={descriptionRef} className={`text-sm text-primary font-medium ${expanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}>{post.description}</p>{canExpand&&<button type="button" onClick={()=>setExpanded(!expanded)} className="inline-flex w-fit items-center gap-1 text-sm font-bold text-primary hover:underline" aria-expanded={expanded}>{expanded?"Ver menos":"Ver mais"}{expanded?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>}<div className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border"><b>{post.author.initial}</b> {post.author.name} · {post.date}</div></div><div className="flex flex-wrap gap-2 px-4 pb-4"><Contact post={post} label="Entrar em contato" icon={<MessageCircle size={15}/>}/>{post.type==="adoption"&&<><Contact post={post} label="Quero adotar" icon={<Heart size={15}/>}/><Contact post={post} label="Oferecer lar temporário" icon={<Home size={15}/>}/></>}</div></article>;
 }
 export function FeedPage() {
   const { posts, loading } = usePosts();
