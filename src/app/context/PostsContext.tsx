@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { useAuth } from "./AuthContext";
 
 export type PostType = "adoption" | "lost";
 export interface Post {
@@ -21,8 +22,17 @@ function toPost(row: any): Post {
 
 export function PostsProvider({ children }: { children: React.ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]); const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const refreshPosts = async () => { setLoading(true); const { data, error } = await supabase.from("feed_posts").select("*").order("created_at", { ascending: false }); if (!error) setPosts((data || []).map(toPost)); setLoading(false); };
-  useEffect(() => { refreshPosts(); }, []);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+    void refreshPosts();
+  }, [authLoading, user?.id]);
   const addPost = async (post: Omit<Post, "id" | "date" | "author">) => {
     const { data: userData } = await supabase.auth.getUser(); if (!userData.user) return null;
     const { data, error } = await supabase.from("posts").insert({ user_id: userData.user.id, type: post.type, name: post.name, neighborhood: post.neighborhood, description: post.description, photo_url: post.photo || null, species: post.species || null, gender: post.gender || null, breed: post.breed || null, age: post.age || null, whatsapp: post.whatsapp, color: post.color || null, last_seen: post.lastSeen || null }).select().single();
