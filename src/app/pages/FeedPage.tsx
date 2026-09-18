@@ -1,8 +1,9 @@
 import { useState, type ReactNode, useEffect, useRef } from "react";
-import { MapPin, MessageCircle, Heart, Home, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, MessageCircle, Heart, Home, ChevronDown, ChevronUp, X } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { usePosts, Post } from "../context/PostsContext";
 import { ImageWithFallback } from "../components/media/ImageWithFallback";
+import { Dialog, DialogContent } from "../components/ui/dialog";
 import { logPageAccess } from "../../lib/accessLog";
 type Filter = "todos" | "adoption" | "lost";
 function Badge({type}:{type:Post["type"]}) { return <span className={`absolute top-3 left-3 z-20 text-white text-xs font-bold px-3 py-1 rounded-full ${type==="adoption"?"bg-emerald-500":"bg-orange-500"}`}>{type==="adoption"?"Adoção":"Perdido"}</span>; }
@@ -10,6 +11,7 @@ function Contact({post,label,icon}:{post:Post;label:string;icon?:ReactNode}) { c
 function Card({post}:{post:Post}) {
   const [expanded, setExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -17,7 +19,40 @@ function Card({post}:{post:Post}) {
     if (description) setCanExpand(description.scrollHeight > description.clientHeight);
   }, [post.description]);
 
-  return <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border flex h-full flex-col"><div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-slate-100">{post.photo?<><div className="absolute inset-0 scale-[1.08] bg-cover bg-center opacity-30 blur-sm" style={{backgroundImage:`url(${post.photo})`}} aria-hidden="true"/><ImageWithFallback src={post.photo} alt={post.name} className="relative z-0 block h-full w-full object-cover object-center"/></>:<span className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">Sem foto</span>}<Badge type={post.type}/></div><div className="p-4 flex flex-col gap-2 flex-1"><h3 className="text-lg font-extrabold">{post.name}</h3><div className="flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin size={14}/>{post.neighborhood}</div><p ref={descriptionRef} className={`text-sm text-primary font-medium ${expanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}>{post.description}</p>{canExpand&&<button type="button" onClick={()=>setExpanded(!expanded)} className="inline-flex w-fit items-center gap-1 text-sm font-bold text-primary hover:underline" aria-expanded={expanded}>{expanded?"Ver menos":"Ver mais"}{expanded?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>}<div className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border"><b>{post.author.initial}</b> {post.author.name} · {post.date}</div></div><div className="flex flex-wrap gap-2 px-4 pb-4"><Contact post={post} label="Entrar em contato" icon={<MessageCircle size={15}/>}/>{post.type==="adoption"&&<><Contact post={post} label="Quero adotar" icon={<Heart size={15}/>}/><Contact post={post} label="Oferecer lar temporário" icon={<Home size={15}/>}/></>}</div></article>;
+  return <>
+    <Dialog open={imageOpen} onOpenChange={setImageOpen}>
+      <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-border flex h-full flex-col">
+        <button type="button" onClick={()=>setImageOpen(true)} className="relative block w-full overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" aria-label={`Abrir imagem de ${post.name}`}>
+          <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-slate-100">
+            {post.photo ? <><div className="absolute inset-0 scale-[1.08] bg-cover bg-center opacity-30 blur-sm" style={{backgroundImage:`url(${post.photo})`}} aria-hidden="true"/><ImageWithFallback src={post.photo} alt={post.name} className="relative z-0 block h-full w-full object-cover object-center"/></> : <span className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">Sem foto</span>}
+            <Badge type={post.type}/>
+          </div>
+        </button>
+        <div className="p-4 flex flex-col gap-2 flex-1">
+          <h3 className="text-lg font-extrabold">{post.name}</h3>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><MapPin size={14}/>{post.neighborhood}</div>
+          <p ref={descriptionRef} className={`text-sm text-primary font-medium ${expanded ? "whitespace-pre-wrap" : "line-clamp-2"}`}>{post.description}</p>{canExpand&&<button type="button" onClick={()=>setExpanded(!expanded)} className="inline-flex w-fit items-center gap-1 text-sm font-bold text-primary hover:underline" aria-expanded={expanded}>{expanded?"Ver menos":"Ver mais"}{expanded?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>}
+          <div className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border"><b>{post.author.initial}</b> {post.author.name} · {post.date}</div>
+        </div>
+        <div className="flex flex-wrap gap-2 px-4 pb-4"><Contact post={post} label="Entrar em contato" icon={<MessageCircle size={15}/>}/>{post.type==="adoption"&&<><Contact post={post} label="Quero adotar" icon={<Heart size={15}/>}/><Contact post={post} label="Oferecer lar temporário" icon={<Home size={15}/>}/></>}</div>
+      </article>
+
+      {post.photo && <DialogContent className="max-w-5xl w-[92vw] h-[90vh] p-0 overflow-hidden border-0 bg-black/85 shadow-2xl">
+        <div className="relative flex h-full w-full flex-col bg-black">
+          <button type="button" onClick={()=>setImageOpen(false)} className="absolute top-4 right-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" aria-label="Fechar imagem">
+            <X size={20} />
+          </button>
+          <div className="flex h-full w-full items-center justify-center p-6 sm:p-10">
+            <img src={post.photo} alt={post.name} className="max-h-full max-w-full rounded-xl object-contain shadow-2xl" />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-white/10 bg-black/50 px-4 py-3 text-sm text-white backdrop-blur-sm">
+            <div className="truncate"><span className="font-semibold">{post.name}</span> · {post.neighborhood}</div>
+            <button type="button" onClick={()=>setImageOpen(false)} className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-medium hover:bg-white/10">Voltar ao feed</button>
+          </div>
+        </div>
+      </DialogContent>}
+    </Dialog>
+  </>;
 }
 export function FeedPage() {
   const { posts, loading } = usePosts();
