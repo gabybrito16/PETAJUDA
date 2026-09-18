@@ -46,7 +46,7 @@ export function Navbar({ variant = "app", searchValue = "", onSearchChange }: Na
   }
 
   return (
-    <header className="w-full bg-white border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-50">
+    <header className="w-full bg-white border-b border-border px-4 py-3 flex flex-wrap items-center gap-2 md:gap-3 sticky top-0 z-50">
       <button
         type="button"
         onClick={() => navigate(user ? "/feed" : "/")}
@@ -60,7 +60,7 @@ export function Navbar({ variant = "app", searchValue = "", onSearchChange }: Na
           <span className="text-accent"> AJUDA</span>
         </span>
       </button>
-      <div className="flex-1 relative max-w-md">
+      <div className="order-3 relative w-full md:order-none md:flex-1 md:max-w-md">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
@@ -70,19 +70,22 @@ export function Navbar({ variant = "app", searchValue = "", onSearchChange }: Na
           className="w-full pl-9 pr-4 py-2 text-sm bg-muted rounded-full border border-border outline-none focus:ring-2 focus:ring-primary/30 transition"
         />
       </div>
-      <button
-        onClick={() => navigate("/nova-publicacao")}
-        className="flex items-center gap-1.5 bg-accent text-accent-foreground text-sm font-bold px-4 py-2 rounded-full hover:bg-orange-600 transition-colors shrink-0"
-      >
-        <Plus size={16} />
-        Nova Publicação
-      </button>
-      <button onClick={() => navigate("/perfil")} title="Meu perfil" className="w-9 h-9 rounded-full bg-secondary text-primary flex items-center justify-center font-extrabold text-xs hover:bg-blue-100 transition-colors shrink-0">
-        {initials}
-      </button>
-      <button onClick={async () => { await signOut(); navigate("/entrar", { replace: true }); }} title="Sair" className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors shrink-0">
-        <LogOut size={18} />
-      </button>
+      <div className="ml-auto flex items-center gap-2 md:ml-0">
+        <button
+          onClick={() => navigate("/nova-publicacao")}
+          className="flex items-center gap-1.5 bg-accent text-accent-foreground text-sm font-bold px-4 py-2 rounded-full hover:bg-orange-600 transition-colors shrink-0"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">Nova Publicação</span>
+          <span className="sm:hidden">Nova</span>
+        </button>
+        <button onClick={() => navigate("/perfil")} title="Meu perfil" className="w-9 h-9 rounded-full bg-secondary text-primary flex items-center justify-center font-extrabold text-xs hover:bg-blue-100 transition-colors shrink-0">
+          {initials}
+        </button>
+        <button onClick={async () => { await signOut(); navigate("/entrar", { replace: true }); }} title="Sair" className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors shrink-0">
+          <LogOut size={18} />
+        </button>
+      </div>
     </header>
   );
 }
