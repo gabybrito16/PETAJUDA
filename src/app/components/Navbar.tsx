@@ -46,7 +46,7 @@ export function Navbar({ variant = "app", searchValue = "", onSearchChange }: Na
   }
 
   return (
-    <header className="w-full bg-white border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+    <header className="w-full bg-white border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-50">
       <button
         type="button"
         onClick={() => navigate(user ? "/feed" : "/")}
