@@ -37,17 +37,19 @@ function Card({post}:{post:Post}) {
         <div className="flex flex-wrap gap-2 px-4 pb-4"><Contact post={post} label="Entrar em contato" icon={<MessageCircle size={15}/>}/>{post.type==="adoption"&&<><Contact post={post} label="Quero adotar" icon={<Heart size={15}/>}/><Contact post={post} label="Oferecer lar temporário" icon={<Home size={15}/>}/></>}</div>
       </article>
 
-      {post.photo && <DialogContent className="max-w-5xl w-[92vw] h-[90vh] p-0 overflow-hidden border-0 bg-black/85 shadow-2xl">
-        <div className="relative flex h-full w-full flex-col bg-black">
-          <button type="button" onClick={()=>setImageOpen(false)} className="absolute top-4 right-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" aria-label="Fechar imagem">
-            <X size={20} />
-          </button>
-          <div className="flex h-full w-full items-center justify-center p-6 sm:p-10">
-            <img src={post.photo} alt={post.name} className="max-h-full max-w-full rounded-xl object-contain shadow-2xl" />
+      {post.photo && <DialogContent className="max-w-[92vw] w-auto max-h-[90vh] overflow-hidden border-0 bg-[#111111] p-0 shadow-2xl">
+        <div className="flex max-h-[90vh] w-full flex-col bg-[#111111]">
+          <div className="relative flex items-center justify-center bg-[#111111] p-3 pb-0">
+            <button type="button" onClick={()=>setImageOpen(false)} className="absolute top-3 right-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" aria-label="Fechar imagem">
+              <X size={20} />
+            </button>
+            <div className="flex max-h-[70vh] max-w-[90vw] items-center justify-center overflow-hidden rounded-2xl bg-black/20 p-0">
+              <img src={post.photo} alt={post.name} className="max-h-[70vh] w-auto max-w-full rounded-2xl object-contain shadow-2xl" />
+            </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-white/10 bg-black/50 px-4 py-3 text-sm text-white backdrop-blur-sm">
-            <div className="truncate"><span className="font-semibold">{post.name}</span> · {post.neighborhood}</div>
-            <button type="button" onClick={()=>setImageOpen(false)} className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-medium hover:bg-white/10">Voltar ao feed</button>
+          <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[#151515] px-4 py-3 text-sm text-white">
+            <div className="truncate pr-2"><span className="font-semibold">{post.name}</span> · {post.neighborhood}</div>
+            <button type="button" onClick={()=>setImageOpen(false)} className="shrink-0 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-medium hover:bg-white/10">Voltar ao feed</button>
           </div>
         </div>
       </DialogContent>}
